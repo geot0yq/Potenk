@@ -1,0 +1,61 @@
+plugins {
+    id "com.android.application"
+}
+
+def signingProperties = new Properties()
+def signingFile = rootProject.file("signing.properties")
+if (signingFile.exists()) {
+    signingFile.withInputStream { signingProperties.load(it) }
+}
+
+android {
+    namespace "com.example.aideveloper.host"
+    compileSdk 35
+
+    defaultConfig {
+        applicationId "com.example.aideveloper.host"
+        minSdk 23
+        targetSdk 35
+        versionCode 6
+        versionName "2.1.0-reconstructed"
+    }
+
+    signingConfigs {
+        release {
+            if (signingProperties.getProperty("storeFile")) {
+                storeFile rootProject.file(signingProperties.getProperty("storeFile"))
+                storePassword signingProperties.getProperty("storePassword")
+                keyAlias signingProperties.getProperty("keyAlias")
+                keyPassword signingProperties.getProperty("keyPassword")
+            } else {
+                // Local smoke builds remain installable; CI refuses this fallback.
+                signingConfig signingConfigs.debug
+            }
+        }
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix ".debug"
+            versionNameSuffix "-debug"
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            signingConfig signingConfigs.release
+            proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+        }
+    }
+
+    packaging {
+        resources {
+            excludes += ["/META-INF/{AL2.0,LGPL2.1}"]
+        }
+    }
+
+}
+
+dependencies {
+    implementation "androidx.core:core:1.13.1"
+    testImplementation "junit:junit:4.13.2"
+}
