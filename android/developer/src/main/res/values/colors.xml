@@ -1,0 +1,12 @@
+<resources>
+    <color name="ink">#18212B</color>
+    <color name="muted">#637083</color>
+    <color name="surface">#F5F7FB</color>
+    <color name="panel">#FFFFFF</color>
+    <color name="accent">#6958D8</color>
+    <color name="accent_dark">#4937B3</color>
+    <color name="accent_soft">#E9E5FF</color>
+    <color name="success">#16845B</color>
+    <color name="warning">#A86A00</color>
+    <color name="danger">#B3261E</color>
+</resources>
