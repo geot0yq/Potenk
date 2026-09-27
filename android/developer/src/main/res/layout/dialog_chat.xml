@@ -1,0 +1,22 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+    <TextView
+        android:id="@+id/chatHistory"
+        android:layout_width="match_parent"
+        android:layout_height="220dp"
+        android:background="@drawable/panel"
+        android:gravity="top|start"
+        android:padding="12dp"
+        android:scrollbars="vertical"
+        android:textColor="@color/ink"
+        android:textSize="14sp" />
+    <EditText
+        android:id="@+id/chatInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="اكتب رسالة للمساعد..."
+        android:inputType="textCapSentences|textMultiLine" />
+</LinearLayout>
