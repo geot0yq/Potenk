@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">AI Anime Developer</string>
+    <string name="app_subtitle">مساعد تطوير آمن • تحليل • اختبار • تحديث</string>
+    <string name="api_base_url">API Base URL</string>
+    <string name="api_key">API Key</string>
+    <string name="model">Model</string>
+    <string name="test_api">اختبار API</string>
+    <string name="develop">تطوير آمن</string>
+    <string name="chat">محادثة</string>
+    <string name="request_hint">اكتب ما تريد تطويره أو إصلاحه...</string>
+    <string name="independent_mode">الوضع المستقل: يجهّز التحليل والتغييرات ويطلب موافقة العمليات المهمة.</string>
+    <string name="assistant_greeting">مرحبًا! أنا مساعدك الذكي</string>
+    <string name="host_not_configured">لم يتم إعداد Build Host بعد.</string>
+</resources>
