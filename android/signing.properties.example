@@ -1,0 +1,6 @@
+# Copy to android/signing.properties for a local release build.
+# Never commit signing.properties or a keystore.
+storeFile=local-release.keystore
+storePassword=replace-me
+keyAlias=ai-anime-release
+keyPassword=replace-me
