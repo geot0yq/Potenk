@@ -16,7 +16,8 @@ android {
         applicationId "com.example.aideveloper"
         minSdk 23
         targetSdk 35
-        versionCode 3
+        versionCode project.hasProperty("versionCode")
+                ? project.property("versionCode").toInteger() : 3
         versionName "2.1.0-reconstructed"
     }
 
