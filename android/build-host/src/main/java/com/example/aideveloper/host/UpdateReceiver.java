@@ -21,7 +21,14 @@ public final class UpdateReceiver extends BroadcastReceiver {
         HostStore store = new HostStore(context);
         if ("com.example.aideveloper.host.DEVELOPMENT_REQUEST".equals(intent.getAction())) {
             String request = intent.getStringExtra("requestJson");
-            if (request != null && !request.trim().isEmpty()) store.saveRequest(request);
+            if (request != null && !request.trim().isEmpty()) {
+                store.saveRequest(request);
+                MainActivity.notifyStatus(
+                        context,
+                        "تم استلام طلب التطوير؛ سيبدأ البناء والتحقق تلقائيًا."
+                );
+                GitHubBuildCoordinator.start(context);
+            }
             return;
         }
         if (!"com.example.aideveloper.host.RECEIVE_UPDATE".equals(intent.getAction())) return;
@@ -47,37 +54,7 @@ public final class UpdateReceiver extends BroadcastReceiver {
                     while ((count = input.read(buffer)) != -1) output.write(buffer, 0, count);
                 }
 
-                UpdateGate gate = new UpdateGate();
-                UpdateGate.Result result = gate.validate(context, candidate, expectedSha);
-                if (!result.accepted) {
-                    if (candidate != null) candidate.delete();
-                    MainActivity.notifyStatus(context, "رفض التحديث: " + result.reason);
-                    return;
-                }
-                long oldVersion = currentVersion(context);
-                store.saveCandidate(candidate, expectedSha, oldVersion);
-                MainActivity.notifyStatus(context, result.reason + "؛ يبدأ مسار التثبيت الرسمي");
-
-                if (Build.VERSION.SDK_INT >= 26
-                        && !context.getPackageManager().canRequestPackageInstalls()) {
-                    Intent settings = new Intent(
-                            Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
-                            Uri.parse("package:" + context.getPackageName())
-                    );
-                    settings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    context.startActivity(settings);
-                    MainActivity.notifyStatus(context, "Android يطلب إذن مصادر التثبيت لهذا التطبيق؛ لم يتم تجاوز حماية النظام.");
-                    return;
-                }
-                Uri installUri = FileProvider.getUriForFile(
-                        context,
-                        context.getPackageName() + ".fileprovider",
-                        candidate
-                );
-                Intent installer = new Intent(Intent.ACTION_VIEW);
-                installer.setDataAndType(installUri, "application/vnd.android.package-archive");
-                installer.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                context.startActivity(installer);
+                submitCandidate(context, candidate, expectedSha);
             } catch (Exception error) {
                 if (candidate != null) candidate.delete();
                 MainActivity.notifyStatus(context, "فشل التحديث قبل التثبيت: " + error.getMessage());
@@ -85,6 +62,39 @@ public final class UpdateReceiver extends BroadcastReceiver {
                 pending.finish();
             }
         }).start();
+    }
+
+    static void submitCandidate(Context context, File candidate, String expectedSha) throws Exception {
+        UpdateGate.Result result = new UpdateGate().validate(context, candidate, expectedSha);
+        if (!result.accepted) {
+            if (candidate != null) candidate.delete();
+            MainActivity.notifyStatus(context, "رفض التحديث: " + result.reason);
+            return;
+        }
+        HostStore store = new HostStore(context);
+        store.saveCandidate(candidate, expectedSha, currentVersion(context));
+        MainActivity.notifyStatus(context, result.reason + "؛ يبدأ مسار التثبيت الرسمي");
+
+        if (Build.VERSION.SDK_INT >= 26
+                && !context.getPackageManager().canRequestPackageInstalls()) {
+            Intent settings = new Intent(
+                    Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                    Uri.parse("package:" + context.getPackageName())
+            );
+            settings.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            context.startActivity(settings);
+            MainActivity.notifyStatus(context, "Android يطلب إذن مصادر التثبيت لهذا التطبيق؛ لم يتم تجاوز حماية النظام.");
+            return;
+        }
+        Uri installUri = FileProvider.getUriForFile(
+                context,
+                context.getPackageName() + ".fileprovider",
+                candidate
+        );
+        Intent installer = new Intent(Intent.ACTION_VIEW);
+        installer.setDataAndType(installUri, "application/vnd.android.package-archive");
+        installer.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        context.startActivity(installer);
     }
 
     private static long currentVersion(Context context) {
