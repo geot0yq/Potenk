@@ -40,6 +40,23 @@
             android:textColor="@color/muted"
             android:textSize="14sp"
             android:visibility="gone" />
+        <EditText
+            android:id="@+id/githubToken"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:hint="@string/github_token"
+            android:inputType="textPassword"
+            android:singleLine="true" />
+        <Button
+            android:id="@+id/buildAndUpdate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/button"
+            android:text="@string/build_and_update"
+            android:textColor="@color/panel"
+            android:textStyle="bold" />
         <Button
             android:id="@+id/install"
             android:layout_width="match_parent"
