@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import org.json.JSONObject;
@@ -18,6 +19,7 @@ public final class MainActivity extends Activity {
     private TextView status;
     private TextView request;
     private HostStore store;
+    private EditText githubToken;
 
     public static void notifyStatus(Context context, String message) {
         lastStatus = message;
@@ -35,12 +37,35 @@ public final class MainActivity extends Activity {
         store = new HostStore(this);
         status = findViewById(R.id.status);
         request = findViewById(R.id.request);
+        githubToken = findViewById(R.id.githubToken);
         findViewById(R.id.install).setOnClickListener(view -> launchPending());
+        findViewById(R.id.buildAndUpdate).setOnClickListener(view -> startBuild());
         findViewById(R.id.openDeveloper).setOnClickListener(view -> {
             Intent launch = getPackageManager().getLaunchIntentForPackage(UpdateGate.DEVELOPER_PACKAGE);
             if (launch != null) startActivity(launch);
         });
+        loadToken();
         render();
+    }
+
+    private void loadToken() {
+        try {
+            githubToken.setText(new HostSecurePreferences(this).readGithubToken());
+        } catch (Exception error) {
+            lastStatus = "تعذر قراءة رمز GitHub المحفوظ بأمان.";
+        }
+    }
+
+    private void startBuild() {
+        try {
+            new HostSecurePreferences(this).saveGithubToken(
+                    githubToken.getText().toString().trim()
+            );
+            GitHubBuildCoordinator.start(this);
+        } catch (Exception error) {
+            lastStatus = "تعذر حفظ إعداد البناء: " + error.getMessage();
+            render();
+        }
     }
 
     @Override
@@ -81,22 +106,19 @@ public final class MainActivity extends Activity {
     private void launchPending() {
         File candidate = store.candidate();
         if (candidate == null || !candidate.isFile()) {
-            lastStatus = "لا يوجد APK مرشح اجتاز التحقق.";
+            lastStatus = store.request().isEmpty()
+                    ? "لا يوجد APK مرشح اجتاز التحقق."
+                    : "تم استلام الطلب. اضغط «بناء وتحديث» بعد حفظ رمز GitHub.";
             render();
             return;
         }
-        UpdateGate.Result result = new UpdateGate().validate(this, candidate, store.candidateSha());
-        if (!result.accepted) {
+        try {
+            UpdateReceiver.submitCandidate(this, candidate, store.candidateSha());
+        } catch (Exception error) {
             store.clearCandidate();
-            lastStatus = "مُنع التثبيت: " + result.reason;
+            lastStatus = "فشل بدء التثبيت: " + error.getMessage();
             render();
-            return;
         }
-        UpdateReceiver receiver = new UpdateReceiver();
-        Intent intent = new Intent(this, MainActivity.class);
-        // The receiver already starts the official installer when an update arrives.
-        lastStatus = "المرشح صالح؛ أعد إرساله من Developer لبدء Android Package Installer.";
-        render();
     }
 
     private void verifyAfterInstall() {
