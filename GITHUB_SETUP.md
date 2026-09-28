@@ -31,3 +31,14 @@ Workflow البناء لا يضع مفاتيح داخل الكود. قبل نش�
 
 تطبيق Developer يراقب عنوان GitHub Releases الثابت للمستودع العام، ولا يحتاج
 رابط بناء جديدًا لكل تحديث.
+
+## البناء التلقائي من Build Host
+
+لبدء البناء مباشرة بعد وصول طلب من Developer، أدخل في شاشة Build Host رمز
+GitHub يملك صلاحية تشغيل Actions وقراءة محتويات المستودع. يحفظ التطبيق الرمز
+داخل Android Keystore ولا يكتبه في السجل أو ملفات المشروع. يطلق التطبيق
+`android.yml` على فرع `main`، وينتظر نفس تشغيل Workflow، ثم ينزّل artifact
+ذلك التشغيل فقط قبل فحص APK وتسليمه لمثبّت Android الرسمي.
+
+يفضل استخدام Fine-grained token بصلاحيات `Actions: Read and write` و
+`Contents: Read` للمستودع فقط. لا تضع الرمز داخل الكود أو `signing.properties`.
