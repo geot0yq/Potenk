@@ -21,3 +21,9 @@ See:
 - `GITHUB_SETUP.md` — one-time signing setup
 - `SECURITY_NOTES.md` — security boundary and original-signing limitation
 - `.github/workflows/android.yml` — test, lint, APK validation, and release flow
+
+Build Host now has a **Build and update** action. When it has a GitHub Actions
+token stored in its Android Keystore, a received request starts `android.yml`,
+waits for the matching successful run, and passes only that run's
+`Developer.apk` through the existing package/signature/version gate. Android
+may still show its normal installer confirmation.
